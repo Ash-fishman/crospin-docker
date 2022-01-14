@@ -1,0 +1,78 @@
+version: "3.7"
+
+services:
+  postgres-ethglobal-test:
+    container_name: postgres-ethglobal-test
+    image: postgres:10-alpine
+    restart: "no"
+    ports:
+      - "$POSTGRES_PORT:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      PGPASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+    volumes:
+      - my-db-test:/var/lib/postgresql/data:cached
+    networks:
+      - test-ethglobal
+
+  localstack-ethglobal-test:
+    container_name: localstack-ethglobal-test
+    image: localstack/localstack-full:0.12.6
+    ports:
+      - "${AWS_PORT}:4566"
+      - "8088:8088"
+    networks:
+      - test-ethglobal
+    environment:
+      - SERVICES=s3
+      - PORT_WEB_UI=8088
+      - DEFAULT_REGION=us-west-1
+      - DATA_DIR=./localstack/test
+    volumes:
+      - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
+
+  ipfs0-ethglobal-test:
+    container_name: ipfs0-ethglobal-test
+    image: ipfs/go-ipfs:latest
+    ports:
+      - "4001:4001" # ipfs swarm - expose if needed/wanted
+      - "5001:5001" # ipfs api - expose if needed/wanted
+      - "8080:8080" # ipfs gateway - expose if needed/wanted
+    volumes:
+      - ./compose/ipfs0:/data/ipfs      
+    networks:
+      - test-ethglobal
+
+  cluster0-ethglobal-test:
+    container_name: cluster0-ethglobal-test
+    image: ipfs/ipfs-cluster:latest
+    depends_on:
+      - ipfs0-ethglobal-test
+    environment:
+      CLUSTER_PEERNAME: cluster0
+      CLUSTER_SECRET: ${CLUSTER_SECRET} # From shell variable if set
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs0/tcp/5001
+      CLUSTER_CRDT_TRUSTEDPEERS: '*' # Trust all peers in Cluster
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094 # Expose API
+      CLUSTER_MONITORPINGINTERVAL: 2s # Speed up peer discovery
+    ports:
+          # Open API port (allows ipfs-cluster-ctl usage on host)
+          - "127.0.0.1:9094:9094"
+          # The cluster swarm port would need  to be exposed if this container
+          # was to connect to cluster peers on other hosts.
+          # But this is just a testing cluster.
+          # - "9096:9096" # Cluster IPFS Proxy endpoint
+    volumes:
+      - ./compose/cluster0:/data/ipfs-cluster
+    networks:
+      - test-ethglobal
+
+
+volumes:
+  my-db-test:
+
+networks:
+  test-ethglobal:
+    name: test-ethglobal-network
