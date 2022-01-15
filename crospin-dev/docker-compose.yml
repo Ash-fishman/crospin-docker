@@ -1,8 +1,8 @@
 version: "3.7"
 
 services:
-  postgres-ethglobal:
-    container_name: postgres-ethglobal
+  postgres-crospin:
+    container_name: postgres-crospin
     image: postgres:10-alpine
     restart: "no"
     ports:
@@ -15,16 +15,16 @@ services:
     volumes:
       - my-db:/var/lib/postgresql/data:cached
     networks:
-      - ethglobal
+      - crospin
 
-  localstack-ethglobal:
-    container_name: localstack-ethglobal
+  localstack-crospin:
+    container_name: localstack-crospin
     image: localstack/localstack-full:0.12.6
     ports:
       - "${AWS_PORT}:4566"
       - "8088:8088"
     networks:
-      - ethglobal
+      - crospin
     environment:
       - SERVICES=s3
       - PORT_WEB_UI=8088
@@ -33,35 +33,35 @@ services:
     volumes:
       - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
 
-  backend-ethglobal:
+  backend-crospin:
     image: node:16.13.1
     user: node
     command: npm run start:debug
-    container_name: backend-ethglobal
-    working_dir: $ETHGLOBAL_BACKEND_FOLDER
+    container_name: backend-crospin
+    working_dir: $CROSPIN_BACKEND_FOLDER
     volumes:
-      - "../../ethglobal-backend:$ETHGLOBAL_BACKEND_FOLDER:cached"
+      - "../../crospin-backend:$CROSPIN_BACKEND_FOLDER:cached"
     ports:
       - "3001:3001"
     depends_on:
-      - postgres-ethglobal
-      - localstack-ethglobal
+      - postgres-crospin
+      - localstack-crospin
     env_file: .env
     networks:
-      - ethglobal    
+      - crospin    
 
-  frontend-ethglobal:
+  frontend-crospin:
     image: node:16.13.1
     user: node
-    container_name: frontend-ethglobal
-    working_dir: $ETHGLOBAL_FRONTEND_FOLDER
+    container_name: frontend-crospin
+    working_dir: $CROSPIN_FRONTEND_FOLDER
     command: npm run dev
     volumes:
-      - "../../ethglobal-webapp:$ETHGLOBAL_FRONTEND_FOLDER:cached"
+      - "../../crospin-webapp:$CROSPIN_FRONTEND_FOLDER:cached"
     ports:
       - "3000:3000"
     networks:
-      - ethglobal
+      - crospin
     environment:
       - "REACT_APP_JWT_SECRET_KEY=$JWT_SECRET_KEY"
       - "REACT_APP_FACEBOOK_APP_ID=$FACEBOOK_APP_ID"
@@ -71,5 +71,5 @@ volumes:
   my-db:
 
 networks:
-  ethglobal:
-    name: ethglobal-network
+  crospin:
+    name: crospin-network

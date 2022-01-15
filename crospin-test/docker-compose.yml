@@ -1,8 +1,8 @@
 version: "3.7"
 
 services:
-  postgres-ethglobal-test:
-    container_name: postgres-ethglobal-test
+  postgres-crospin-test:
+    container_name: postgres-crospin-test
     image: postgres:10-alpine
     restart: "no"
     ports:
@@ -15,16 +15,16 @@ services:
     volumes:
       - my-db-test:/var/lib/postgresql/data:cached
     networks:
-      - test-ethglobal
+      - test-crospin
 
-  localstack-ethglobal-test:
-    container_name: localstack-ethglobal-test
+  localstack-crospin-test:
+    container_name: localstack-crospin-test
     image: localstack/localstack-full:0.12.6
     ports:
       - "${AWS_PORT}:4566"
       - "8088:8088"
     networks:
-      - test-ethglobal
+      - test-crospin
     environment:
       - SERVICES=s3
       - PORT_WEB_UI=8088
@@ -33,8 +33,8 @@ services:
     volumes:
       - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
 
-  ipfs0-ethglobal-test:
-    container_name: ipfs0-ethglobal-test
+  ipfs0-crospin-test:
+    container_name: ipfs0-crospin-test
     image: ipfs/go-ipfs:latest
     ports:
       - "4001:4001" # ipfs swarm - expose if needed/wanted
@@ -43,13 +43,13 @@ services:
     volumes:
       - ./compose/ipfs0:/data/ipfs      
     networks:
-      - test-ethglobal
+      - test-crospin
 
-  cluster0-ethglobal-test:
-    container_name: cluster0-ethglobal-test
+  cluster0-crospin-test:
+    container_name: cluster0-crospin-test
     image: ipfs/ipfs-cluster:latest
     depends_on:
-      - ipfs0-ethglobal-test
+      - ipfs0-crospin-test
     environment:
       CLUSTER_PEERNAME: cluster0
       CLUSTER_SECRET: ${CLUSTER_SECRET} # From shell variable if set
@@ -67,12 +67,12 @@ services:
     volumes:
       - ./compose/cluster0:/data/ipfs-cluster
     networks:
-      - test-ethglobal
+      - test-crospin
 
 
 volumes:
   my-db-test:
 
 networks:
-  test-ethglobal:
-    name: test-ethglobal-network
+  test-crospin:
+    name: test-crospin-network
