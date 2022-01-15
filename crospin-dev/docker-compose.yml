@@ -46,7 +46,6 @@ services:
     depends_on:
       - postgres-crospin
       - localstack-crospin
-    env_file: .env
     networks:
       - crospin    
 
@@ -57,7 +56,7 @@ services:
     working_dir: $CROSPIN_FRONTEND_FOLDER
     command: npm run dev
     volumes:
-      - "../../crospin-webapp:$CROSPIN_FRONTEND_FOLDER:cached"
+      - "../../cropsin-ui:$CROSPIN_FRONTEND_FOLDER:cached"
     ports:
       - "3000:3000"
     networks:
