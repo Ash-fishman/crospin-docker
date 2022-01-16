@@ -81,6 +81,18 @@ services:
     networks:
       - crospin
 
+  ipfs0-crospin:
+    container_name: ipfs0-crospin
+    image: ipfs/go-ipfs:latest
+    ports:
+      - "4001:4001" # ipfs swarm - expose if needed/wanted
+      - "5001:5001" # ipfs api - expose if needed/wanted
+      - "8080:8080" # ipfs gateway - expose if needed/wanted
+    volumes:
+      - ./compose/ipfs0:/data/ipfs      
+    networks:
+      - crospin      
+
 volumes:
   my-db:
 
